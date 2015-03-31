@@ -8,6 +8,7 @@
 
 #import "Comment.h"
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 @interface Event : NSObject
 
@@ -23,5 +24,8 @@
 
 + (NSArray *)eventsFromArray:(NSArray *)incomingArray;
 - (instancetype)initWithDictionary:(NSDictionary *)dictionary;
++ (void)getDataFromSearchKeyWord:(NSString *)keyword withCompletionHandler:(void(^)(NSArray *events)) completion;
+- (void)getCommentsWithEventID:(NSString *)eventId withCompletion:(void(^)(NSArray *comments))completion;
+- (void)getImageWithURL:(NSURL *)url withCompletion:(void(^)(UIImage *image))completion;
 
 @end

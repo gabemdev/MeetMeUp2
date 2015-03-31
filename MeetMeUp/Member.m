@@ -7,6 +7,7 @@
 //
 
 #import "Member.h"
+#import <UIKit/UIKit.h>
 
 @implementation Member
 
@@ -26,5 +27,25 @@
     return self;
 }
 
++ (void)getMemberInformationWithID:(NSString *)membeId andCompletionHandler:(void(^)(Member *memberInfo))completion {
+
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"https://api.meetup.com/2/member/%@?&sign=true&photo-host=public&page=20&key=f73637d7e3e21353b5d7730385f2f77",membeId]];
+
+    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+
+    [NSURLConnection sendAsynchronousRequest:request
+                                       queue:[NSOperationQueue mainQueue]
+                           completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+                               NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
+
+                               completion([[Member alloc] initWithDictionary:dict]);
+                           }];
+}
+
+- (void)getImageWithURL:(NSURL *)url andCompletionHandler:(void(^)(UIImage *image))completion {
+    [NSURLConnection sendAsynchronousRequest:[NSURLRequest requestWithURL:url] queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+        completion ([UIImage imageWithData:data]);
+        }];
+}
 
 @end

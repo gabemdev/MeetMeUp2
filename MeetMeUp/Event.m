@@ -7,6 +7,7 @@
 //
 
 #import "Event.h"
+#import <UIKit/UIKit.h>
 
 @implementation Event
 
@@ -41,6 +42,60 @@
     }
     return newArray;
 }
+
++ (void)getDataFromSearchKeyWord:(NSString *)keyword withCompletionHandler:(void(^)(NSArray *events)) completion {
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"https://api.meetup.com/2/open_events.json?zip=60604&text=%@&time=,1w&key=f73637d7e3e21353b5d7730385f2f77",keyword]];
+
+    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+
+    [NSURLConnection sendAsynchronousRequest:request
+                                       queue:[NSOperationQueue mainQueue]
+                           completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+
+                               if (!connectionError) {
+                                   NSArray *jsonArray = [[NSJSONSerialization JSONObjectWithData:data
+                                                                                         options:NSJSONReadingAllowFragments
+                                                                                           error:nil] objectForKey:@"results"];
+
+
+                                   NSArray *events = [Event eventsFromArray:jsonArray];
+                                   completion(events);
+                               }
+                           }];
+}
+
+
+- (void)getCommentsWithEventID:(NSString *)eventId withCompletion:(void(^)(NSArray *comments))completion {
+NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"https://api.meetup.com/2/event_comments?&sign=true&photo-host=public&event_id=%@&page=20&key=f73637d7e3e21353b5d7730385f2f77",eventId]];
+
+NSURLRequest *request = [NSURLRequest requestWithURL:url];
+
+[NSURLConnection sendAsynchronousRequest:request
+                                   queue:[NSOperationQueue mainQueue]
+                       completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+
+                           NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
+
+                           NSArray *jsonArray = [dict objectForKey:@"results"];
+                           completion([Comment objectsFromArray:jsonArray]);
+                       }];
+}
+
+
+- (void)getImageWithURL:(NSURL *)url withCompletion:(void(^)(UIImage *image))completion {
+    NSURLRequest *imageReq = [NSURLRequest requestWithURL:url];
+
+    [NSURLConnection sendAsynchronousRequest:imageReq queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (!connectionError) {
+                completion([UIImage imageWithData:data]);
+            }
+        });
+    }];
+}
+
+
+
 
 
 @end
